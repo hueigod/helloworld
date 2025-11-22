@@ -1,117 +1,45 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>開放圖片展示牆</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>展示牆</title>
+
+  <!-- TailwindCSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
-    body {
-      margin: 0;
-      padding: 20px;
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
-    }
-
-    h1 {
-      font-size: 1.4rem;
-      margin-bottom: 16px;
-    }
-
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px;
-    }
-
-    .card {
-      background: rgba(255,255,255,0.05);
-      border-radius: 10px;
-      overflow: hidden;
-      cursor: zoom-in;
-      transition: transform .2s;
-    }
-
-    .card:hover {
-      transform: scale(1.03);
-    }
-
-    .card img {
-      width: 100%;
-      height: 140px;
-      object-fit: cover;
-      display: block;
-    }
-
-    /* Lightbox */
-    .lightbox {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 999;
-    }
-
-    .lightbox.open {
-      display: flex;
-    }
-
-    .lightbox img {
-      max-width: 90%;
-      max-height: 85vh;
-      border-radius: 10px;
-    }
-
-    .nav-btn {
-      position: fixed;
-      top: 50%;
-      transform: translateY(-50%);
-      padding: 10px 14px;
-      background: rgba(255,255,255,0.2);
-      border: 0;
-      color: white;
-      font-size: 20px;
-      cursor: pointer;
-      border-radius: 6px;
-    }
-
-    #prev { left: 20px; }
-    #next { right: 20px; }
-
-    #close {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      font-size: 26px;
-      cursor: pointer;
-      background: rgba(255,255,255,0.2);
-      padding: 4px 10px;
-      border-radius: 6px;
+    /* Lightbox background blur */
+    .backdrop {
+      backdrop-filter: blur(6px);
     }
   </style>
 </head>
 
-<body>
-  <h1>開放圖片展示牆（固定圖片，可直接使用）</h1>
-  <div class="gallery" id="gallery"></div>
+<body class="bg-slate-900 text-white p-6">
+
+  <h1 class="text-2xl font-semibold mb-6">開放圖片展示牆（React UI 風格）</h1>
+
+  <!-- 圖片展示牆 -->
+  <div id="gallery" class="grid gap-4 grid-cols-[repeat(auto-fit,minmax(160px,1fr))]"></div>
 
   <!-- Lightbox -->
-  <div class="lightbox" id="lightbox">
-    <span id="close">✕</span>
-    <button id="prev" class="nav-btn">←</button>
-    <img id="lightbox-img" src="">
-    <button id="next" class="nav-btn">→</button>
+  <div id="lightbox"
+       class="fixed inset-0 bg-black/70 backdrop hidden items-center justify-center p-4 z-50">
+    <div class="relative">
+      <img id="lightbox-img"
+           src=""
+           class="max-h-[85vh] max-w-[90vw] rounded-2xl shadow-2xl" />
+
+      <!-- Close -->
+      <button id="btn-close"
+              class="absolute -top-4 -right-4 bg-white/20 text-white text-2xl px-3 py-1 rounded-xl">
+        ✕
+      </button>
+    </div>
   </div>
 
   <script>
-    const gallery = document.getElementById("gallery");
-    const lightbox = document.getElementById("lightbox");
-    const lightboxImg = document.getElementById("lightbox-img");
-
-    // 固定 12 張開放圖片（Picsum）
     const images = [
       "https://picsum.photos/id/1015/800/600",
       "https://picsum.photos/id/1016/800/600",
@@ -127,57 +55,36 @@
       "https://picsum.photos/id/1050/800/600"
     ];
 
-    let currentIndex = 0;
+    const gallery = document.getElementById("gallery");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightbox-img");
+    const btnClose = document.getElementById("btn-close");
 
-    // 產生展示牆
-    images.forEach((url, index) => {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `<img src="${url}" data-index="${index}" loading="lazy">`;
-      gallery.appendChild(card);
-    });
+    // 建立圖片卡片
+    images.forEach(url => {
+      const div = document.createElement("div");
+      div.className =
+        "rounded-xl overflow-hidden cursor-zoom-in transition hover:scale-[1.03] bg-slate-800 shadow";
 
-    // 點擊開啟放大
-    document.querySelectorAll(".card img").forEach(img => {
-      img.onclick = () => {
-        currentIndex = parseInt(img.dataset.index);
-        openLightbox();
+      div.innerHTML = `<img src="${url}" class="w-full h-40 object-cover" />`;
+
+      div.onclick = () => {
+        lightboxImg.src = url;
+        lightbox.classList.remove("hidden");
+        lightbox.classList.add("flex");
       };
+
+      gallery.appendChild(div);
     });
 
-    function openLightbox() {
-      lightboxImg.src = images[currentIndex];
-      lightbox.classList.add("open");
-    }
-
-    document.getElementById("close").onclick = () => {
-      lightbox.classList.remove("open");
+    // 關 lightbox
+    btnClose.onclick = () => {
+      lightbox.classList.add("hidden");
+      lightbox.classList.remove("flex");
     };
-
-    document.getElementById("next").onclick = () => {
-      currentIndex = (currentIndex + 1) % images.length;
-      openLightbox();
+    lightbox.onclick = (e) => {
+      if (e.target === lightbox) btnClose.onclick();
     };
-
-    document.getElementById("prev").onclick = () => {
-      currentIndex = (currentIndex - 1 + images.length) % images.length;
-      openLightbox();
-    };
-
-    // 鍵盤控制
-    document.addEventListener("keydown", e => {
-      if (!lightbox.classList.contains("open")) return;
-
-      if (e.key === "Escape") lightbox.classList.remove("open");
-      if (e.key === "ArrowRight") {
-        currentIndex = (currentIndex + 1) % images.length;
-        openLightbox();
-      }
-      if (e.key === "ArrowLeft") {
-        currentIndex = (currentIndex - 1 + images.length) % images.length;
-        openLightbox();
-      }
-    });
   </script>
 </body>
 </html>
