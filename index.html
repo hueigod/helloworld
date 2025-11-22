@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>開放圖片展示牆</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 16px;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: zoom-in;
+      transition: transform .2s;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+    }
+
+    .card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 999;
+    }
+
+    .lightbox.open {
+      display: flex;
+    }
+
+    .lightbox img {
+      max-width: 90%;
+      max-height: 85vh;
+      border-radius: 10px;
+    }
+
+    .nav-btn {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.2);
+      border: 0;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    #prev { left: 20px; }
+    #next { right: 20px; }
+
+    #close {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-size: 26px;
+      cursor: pointer;
+      background: rgba(255,255,255,0.2);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>開放圖片展示牆（固定圖片，可直接使用）</h1>
+  <div class="gallery" id="gallery"></div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <span id="close">✕</span>
+    <button id="prev" class="nav-btn">←</button>
+    <img id="lightbox-img" src="">
+    <button id="next" class="nav-btn">→</button>
+  </div>
+
+  <script>
+    const gallery = document.getElementById("gallery");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightbox-img");
+
+    // 固定 12 張開放圖片（Picsum）
+    const images = [
+      "https://picsum.photos/id/1015/800/600",
+      "https://picsum.photos/id/1016/800/600",
+      "https://picsum.photos/id/1025/800/600",
+      "https://picsum.photos/id/1003/800/600",
+      "https://picsum.photos/id/1005/800/600",
+      "https://picsum.photos/id/1011/800/600",
+      "https://picsum.photos/id/1012/800/600",
+      "https://picsum.photos/id/1019/800/600",
+      "https://picsum.photos/id/1020/800/600",
+      "https://picsum.photos/id/1035/800/600",
+      "https://picsum.photos/id/1040/800/600",
+      "https://picsum.photos/id/1050/800/600"
+    ];
+
+    let currentIndex = 0;
+
+    // 產生展示牆
+    images.forEach((url, index) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `<img src="${url}" data-index="${index}" loading="lazy">`;
+      gallery.appendChild(card);
+    });
+
+    // 點擊開啟放大
+    document.querySelectorAll(".card img").forEach(img => {
+      img.onclick = () => {
+        currentIndex = parseInt(img.dataset.index);
+        openLightbox();
+      };
+    });
+
+    function openLightbox() {
+      lightboxImg.src = images[currentIndex];
+      lightbox.classList.add("open");
+    }
+
+    document.getElementById("close").onclick = () => {
+      lightbox.classList.remove("open");
+    };
+
+    document.getElementById("next").onclick = () => {
+      currentIndex = (currentIndex + 1) % images.length;
+      openLightbox();
+    };
+
+    document.getElementById("prev").onclick = () => {
+      currentIndex = (currentIndex - 1 + images.length) % images.length;
+      openLightbox();
+    };
+
+    // 鍵盤控制
+    document.addEventListener("keydown", e => {
+      if (!lightbox.classList.contains("open")) return;
+
+      if (e.key === "Escape") lightbox.classList.remove("open");
+      if (e.key === "ArrowRight") {
+        currentIndex = (currentIndex + 1) % images.length;
+        openLightbox();
+      }
+      if (e.key === "ArrowLeft") {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        openLightbox();
+      }
+    });
+  </script>
+</body>
+</html>
